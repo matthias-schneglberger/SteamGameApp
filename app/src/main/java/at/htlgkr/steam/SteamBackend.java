@@ -3,6 +3,7 @@ package at.htlgkr.steam;
 
 import android.renderscript.ScriptGroup;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 
 public class SteamBackend {
     List<Game> gameList = new ArrayList<>();
-
+    private final String TAG = "SteamBackend";
 
     public SteamBackend() {
         // Implementieren Sie diesen Konstruktor.
@@ -34,45 +35,67 @@ public class SteamBackend {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-//        br.lines().forEach(a -> );
+        br.lines().skip(1).forEach(a -> {
+            String[] parts = a.split(";");
 
+            String name = parts[0];
+            String date = parts[1];
+            String price = parts[2];
+
+            SimpleDateFormat formater = new SimpleDateFormat("dd.MM.yyyy");
+
+            try {
+                gameList.add(new Game(name, formater.parse(date), Double.valueOf(price)));
+            } catch (ParseException e) {
+                Log.e(TAG, "loadGames: Error parsing: " + a);
+            }
+        });
+
+        try {
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void store(OutputStream fileOutputStream) {
         // Implementieren Sie diese Methode.
         // Diese methode schreibt alle Games in den fileOutputStream.
+
+        PrintWriter outPrintWriter = new PrintWriter(new OutputStreamWriter(fileOutputStream));
+
+        gameList.forEach(a -> outPrintWriter.write(a.toCsvString() + "\n"));
+        outPrintWriter.flush();
     }
 
     public List<Game> getGames() {
-        // Implementieren Sie diese Methode.
-        return null;
+        return gameList;
     }
 
     public void setGames(List<Game> games) {
-        // Implementieren Sie diese Methode.
+        this.gameList = games;
     }
 
     public void addGame(Game newGame) {
-        // Implementieren Sie diese Methode
+        gameList.add(newGame);
     }
 
     public double sumGamePrices() {
-        // Implementieren Sie diese Methode mit Streams.
-        return -1;
+        return gameList.stream().mapToDouble(a -> a.getPrice()).sum();
     }
 
     public double averageGamePrice() {
         // Implementieren Sie diese Methode mit Streams.
-        return -1;
+        return gameList.stream().mapToDouble(a -> a.getPrice()).average().getAsDouble();
     }
 
     public List<Game> getUniqueGames() {
         // Implementieren Sie diese Methode mit Streams.
-        return null;
+        return gameList.stream().distinct().collect(Collectors.toList());
     }
 
     public List<Game> selectTopNGamesDependingOnPrice(int n) {
         // Implementieren Sie diese Methode mit Streams.
-        return null;
+        return gameList.stream().sorted((a,b) -> (int)(b.getPrice()-a.getPrice())).limit(n).collect(Collectors.toList());
     }
 }

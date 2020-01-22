@@ -45,13 +45,17 @@ public class Game {
         this.price = price;
     }
 
+    public String toCsvString(){
+        SimpleDateFormat formater = new SimpleDateFormat("dd.MM.yyyy");
+
+        return name + ";" + formater.format(releaseDate) + ";" + price;
+    }
+
     @Override
     public String toString() {
-        SimpleDateFormat formater = new SimpleDateFormat("dd.mm.yyyy");
+        SimpleDateFormat formater = new SimpleDateFormat("dd.MM.yyyy");
 
-
-
-        return formater.format(releaseDate) + " " + name + price;
+        return "[" + formater.format(releaseDate) + "] " + name + " " + price;
     }
 
     @Override
